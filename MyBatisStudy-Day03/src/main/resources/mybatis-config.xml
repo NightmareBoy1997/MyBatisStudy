@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <properties resource="jdbc5.7.properties"/>
+
+    <!-- 设置MyBatis的全局配置  -->
+    <settings>
+        <!-- 将_自动映射为驼峰，如emp_id ： empId  -->
+        <setting name="mapUnderscoreToCamelCase" value="true"></setting>
+        <!-- 开启延迟加载  -->
+        <setting name="lazyLoadingEnabled" value="true"></setting>
+    </settings>
+
+    <typeAliases>
+        <package name="com.javasm.mybatis.entity"/>
+    </typeAliases>
+
+    <environments default="development">
+        <environment id="development">
+
+            <transactionManager type="JDBC"/>
+
+            <dataSource type="POOLED">
+                <!--设置驱动类的全类名-->
+                <property name="driver" value="${jdbc.driver}"/>
+                <!--设置连接数据库的连接地址-->
+                <property name="url" value="${jdbc.url}"/>
+                <!--设置连接数据库的用户名-->
+                <property name="username" value="${jdbc.username}"/>
+                <!--设置连接数据库的密码-->
+                <property name="password" value="${jdbc.password}"/>
+
+            </dataSource>
+        </environment>
+    </environments>
+    <!--引入映射文件-->
+    <mappers>
+        <package name="com.javasm.mybatis.mapper"/>
+    </mappers>
+</configuration>

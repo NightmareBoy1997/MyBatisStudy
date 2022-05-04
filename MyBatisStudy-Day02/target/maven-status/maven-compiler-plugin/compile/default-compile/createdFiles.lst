@@ -1,0 +1,3 @@
+com\javasm\mybatis\utils\SqlSessionUtils.class
+com\javasm\mybatis\entity\User.class
+com\javasm\mybatis\mapper\UserMapper.class

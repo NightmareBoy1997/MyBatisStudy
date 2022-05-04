@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mybatis.mapper.EmployeeMapper">
+
+    <!--  6. sql标签
+        设置SQL字段：<sql id="empColumns"></sql>
+        引用SQL字段：<include refid="empColumn"></include>
+      -->
+    <sql id="selectEmpAllField">
+        emp_id,emp_name,age,gender,email,dept_id
+    </sql>
+    <select id="findEmpByConditionIf" resultType="Employee" >
+        SELECT <include refid="selectEmpAllField" ></include>
+        FROM tb_employees WHERE 1=1
+        <if test="empName!=null and empName!=''">AND emp_name=#{empName}</if>
+        <if test="age!=null and age!=''">AND age=#{age}</if>
+        <if test="gender!=null and gender!=''">AND gender=#{gender}</if>
+        <if test="email!=null and email!=''">AND email=#{email}</if>
+    </select>
+
+
+    <!--  5. foreach
+        collection : 需要遍历的集合或数组
+        item：表示数组或集合中的遍历到的数据
+        separator：循环体之间的 添加内容
+        open：foreach标签所循环的所有内容的开始 加入内容
+        close：foreach标签所循环的所有内容的结束 加入内容
+  -->
+    <insert id="insertMoreByList">
+        INSERT INTO tb_employees VALUES
+        <foreach collection="emps" item="emp" separator=",">
+            ( null,#{emp.empName},#{emp.age},#{emp.gender},#{emp.email} ,null)
+        </foreach>
+    </insert>
+
+    <delete id="deleteMoreByIdArray">
+        <!--  方式一   -->
+        <!--        DELETE FROM tb_employees WHERE emp_id IN-->
+        <!--        <foreach collection="eids" separator="," open="(" close=")" item="eid">-->
+        <!--            #{eid}-->
+        <!--        </foreach>-->
+        DELETE FROM tb_employees WHERE
+        <foreach collection="eids" item="eid" separator="OR">
+            emp_id=#{eid}
+        </foreach>
+    </delete>
+
+
+    <!--  4. choose when otherwise标签 相当于 if else-if default
+      when至少要有一个，otherwise最多只能有一个
+     -->
+    <resultMap id="findEmpByConditionChooseResultMap" type="Employee">
+        <id property="empId" column="emp_id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="gender" column="gender"></result>
+        <result property="email" column="email"></result>
+        <result property="dept.deptId" column="dept_id"></result>
+        <result property="dept.deptName" column="dept_name"></result>
+    </resultMap>
+    <select id="findEmpByConditionChoose" resultMap="findEmpByConditionChooseResultMap">
+        SELECT * FROM tb_employees emp LEFT JOIN tb_depts dept ON emp.dept_id=dept.dept_id
+        <where>
+            <choose>
+                <when test="empId !='' and empId!=null">
+                    where emp_id=#{empId}
+                </when>
+                <when test="empName !=null and empName!=''">
+                    emp_name=#{empName}
+                </when>
+                <when test="age !=null and age!=''">
+                    age=#{age}
+                </when>
+                <when test="email!=null and email!=''">
+                    email=#{email}
+                </when>
+                <otherwise>
+                    emp_id = 1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+
+    <!--  3. trim标签条件查询
+      可以 去除或添加 标签中的内容
+      常用属性
+        prefix | suffix ：在 trim 标签中的内容 前面 | 后面 添加内容
+        prefixOverrides | suffixOverrides：在trim标签中的内容的 前面 | 后面 去掉内容
+      若标签中没有内容，则trim不会生效
+     -->
+    <resultMap id="findEmpByConditionTrimResultMap" type="Employee">
+        <id property="empId" column="emp_id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="gender" column="gender"></result>
+        <result property="email" column="email"></result>
+        <association property="dept" javaType="Dept">
+            <id property="deptId" column="dept_id"></id>
+            <result property="deptName" column="dept_name"></result>
+        </association>
+    </resultMap>
+    <select id="findEmpByConditionTrim" resultMap="findEmpByConditionTrimResultMap">
+        SELECT emp.*,dept.* FROM tb_employees emp LEFT JOIN tb_depts dept
+        ON emp.dept_id=dept.dept_id
+        <trim prefix="WHERE" suffixOverrides="AND|OR">
+            <if test="empId !='' and empId!=null">emp_id=#{empId} AND</if>
+            <if test="empName !='' and empName!=null">emp_name=#{empName} AND</if>
+            <if test="age !=null and age!='' ">age=#{age} AND</if>
+            <if test="gender !=null and gender!='' ">gender=#{gender} AND</if>
+            <if test="email !=null and email!=''">email=#{email} OR</if>
+        </trim>
+    </select>
+
+
+    <!-- 2. where标签条件查询
+      会动态生成 where ， 可以去除前面的 多余and
+      不能去掉后面的 and
+     -->
+    <resultMap id="findEmpByConditionWhereResultMap" type="Employee">
+        <id property="empId" column="emp_id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="gender" column="gender"></result>
+        <result property="email" column="email"></result>
+        <result property="dept.deptId" column="dept_id"></result>
+        <result property="dept.deptName" column="dept_name"></result>
+    </resultMap>
+    <select id="findEmpByConditionWhere" resultMap="findEmpByConditionWhereResultMap">
+        SELECT emp.*,dept.* FROM tb_employees emp LEFT JOIN tb_depts dept ON emp.dept_id=dept.dept_id
+        <where>
+            <if test="empId !='' and empId!=null ">emp_id=#{empId}</if>
+            <if test="empName !='' and empName!=null">and emp_name=#{empName}</if>
+            <if test="age !='' and age!=null ">and age=#{age}</if>
+            <if test="gender !='' and gender!=null">and gender=#{gender}</if>
+            <if test="email !='' and email!=null">and email=#{email}</if>
+        </where>
+    </select>
+
+
+    <!-- 1. if标签条件查询
+          为了避免出现直接拼接 and ，在where后添加一条恒成立的表达式 1=1
+     -->
+<!--    <resultMap id="findEmpByConditionIfResultMap" type="Employee">-->
+<!--        <id property="empId" column="emp_id"></id>-->
+<!--        <result property="empName" column="emp_name"></result>-->
+<!--        <result property="age" column="age"></result>-->
+<!--        <result property="gender" column="gender"></result>-->
+<!--        <result property="email" column="email"></result>-->
+<!--        <result property="dept.deptId" column="dept_id"></result>-->
+<!--        <result property="dept.deptName" column="dept_name"></result>-->
+<!--    </resultMap>-->
+<!--    <select id="findEmpByConditionIf" resultMap="findEmpByConditionIfResultMap">-->
+<!--        SELECT emp.*,dept.* FROM tb_employees emp LEFT JOIN tb_depts dept ON emp.dept_id=dept.dept_id-->
+<!--        WHERE 1=1-->
+<!--        <if test="empId !='' and empId!=null ">-->
+<!--            and emp_id=#{empId}-->
+<!--        </if>-->
+<!--        <if test="empName !='' and empName!=null">-->
+<!--            and emp_name=#{empName}-->
+<!--        </if>-->
+<!--        <if test="age !='' and age!=null ">-->
+<!--            and age=#{age}-->
+<!--        </if>-->
+<!--        <if test="gender !='' and gender!=null">-->
+<!--            and gender=#{gender}-->
+<!--        </if>-->
+<!--        <if test="email !='' and email!=null">-->
+<!--            and email=#{email}-->
+<!--        </if>-->
+<!--    </select>-->
+
+
+</mapper>

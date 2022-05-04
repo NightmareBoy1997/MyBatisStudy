@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mybatis.mapper.EmployeeMapper">
+
+
+    <!-- 处理字段名与属性不一致的情况一 : 使用别名-->
+    <select id="getEmpByIdWithLabel" resultType="Employee">
+        SELECT emp_id empId,emp_name empName,age,gender,email,dept_id deptId FROM tb_employees WHERE emp_id=#{empId}
+    </select>
+
+    <!--   处理字段名与属性不一致的情况二：使用resultMap自定义映射 -->
+
+    <!--
+    resultMap：设置自定义映射关系
+    id：唯一标识，不能重复
+    type：设置映射关系中的实体类类型
+    子标签：
+    id：设置主键的映射关系
+    result：设置普通字段的映射关系
+    属性：
+    property：设置映射关系中的属性名，必须是type属性所设置的实体类类型中的属性名
+    column：设置映射关系中的字段名，必须是sql语句查询出的字段名
+    -->
+    <resultMap id="getEmpByIdWithResultMap" type="employee">
+        <id property="empId" column="emp_id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="gender" column="gender"></result>
+        <result property="email" column="email"></result>
+    </resultMap>
+    <select id="getEmpByIdWithResultMap" resultMap="getEmpByIdWithResultMap">
+        SELECT * FROM tb_employees WHERE emp_id=#{empId}
+    </select>
+
+
+<!--  * 处理多对一的映射关系 方式一:级联 -->
+<resultMap id="getEmpWithTierResultMap" type="Employee">
+    <id property="empId" column="emp_id" ></id>
+    <result property="empName" column="emp_name"></result>
+    <result property="age" column="age"></result>
+    <result property="gender" column="gender"></result>
+    <result property="email" column="email"></result>
+    <result property="dept.deptId" column="dept_id"></result>
+    <result property="dept.deptName" column="dept_name"></result>
+</resultMap>
+    <select id="getEmpWithTier" resultMap="getEmpWithTierResultMap">
+        SELECT emp.*,dept.* FROM tb_employees emp LEFT JOIN tb_depts dept ON emp.dept_id=dept.dept_id WHERE emp_id=#{empId}
+    </select>
+
+    <!--  * 处理多对一的映射关系 方式二: 使用association处理映射关系 -->
+    <!--
+    association:处理多对一的映射关系
+    property:需要处理多对的映射关系的属性名
+    javaType:该对应属性的类型
+    -->
+    <resultMap id="getEmpWithAssociation" type="Employee">
+        <id property="empId" column="emp_id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="gender" column="gender" ></result>
+        <result property="email" column="email"></result>
+        <association property="dept" javaType="Dept">
+            <id property="deptId" column="dept_id" ></id>
+            <result property="deptName" column="dept_name"></result>
+        </association>
+    </resultMap>
+<select id="getEmpWithAssociation" resultMap="getEmpWithAssociation">
+    SELECT emp.* , dept.* FROM tb_employees emp LEFT JOIN tb_depts dept ON emp.dept_id=dept.dept_id WHERE emp_id=#{empId}
+</select>
+
+
+
+
+    <!--  分布查询指定员工及其部门属性 ，步骤一 -->
+    <resultMap id="getEmpAndDeptOneResultMap" type="employee">
+        <id property="empId" column="emp_id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="gender" column="gender"></result>
+        <result property="email" column="email"></result>
+        <!--
+            select:设置分步查询的sql的唯一标识（namespace.SQLId或mapper接口的全类名.方法名）
+            column:设置分布查询的条件
+            fetchType:当开启了全局的延迟加载之后，可通过此属性手动控制延迟加载的效果
+            fetchType="lazy|eager":lazy表示延迟加载，eager表示立即加载
+        -->
+        <association
+                property="dept"
+                select="com.javasm.mybatis.mapper.DeptMapper.getEmpAndDeptStepTwo"
+                column="dept_id">
+        </association>
+    </resultMap>
+    <select id="getEmpAndDeptStepOne" resultMap="getEmpAndDeptOneResultMap">
+        SELECT * FROM tb_employees WHERE emp_id=#{empId}
+    </select>
+
+    <!--  分布查询指定部门id的所有员工集合 步骤二  -->
+    <resultMap id="getDeptAndEmpStepTwoResultMap" type="Employee">
+        <id property="empId" column="emp_id"></id>
+        <result property="empName" column="emp_name"></result>
+        <result property="age" column="age"></result>
+        <result property="gender" column="gender"></result>
+        <result property="email" column="email"></result>
+    </resultMap>
+    <select id="getDeptAndEmpStepTwo" resultMap="getDeptAndEmpStepTwoResultMap">
+        SELECT * FROM tb_employees WHERE dept_id=#{deptId}
+    </select>
+
+</mapper>

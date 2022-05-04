@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mybatis.mapper.DeptMapper">
+
+
+    <!--   使用resultMap自定义映射处理字段名与属性不一致的情况-->
+    <resultMap id="getDeptByDeptIdResultMap" type="dept">
+        <id property="deptId" column="dept_id"></id>
+        <result property="deptName" column="dept_name"></result>
+    </resultMap>
+    <select id="getDeptByDeptId" resultMap="getDeptByDeptIdResultMap">
+        SELECT * FROM tb_depts WHERE dept_id = #{deptId};
+    </select>
+
+
+    <!--
+    collection：处理一对多的映射关系
+    ofType：表示该属性所对应的集合中存储数据的类型
+    -->
+    <resultMap id="getDeptWithCollectionResultMap" type="Dept">
+        <id property="deptId" column="dept_id" ></id>
+        <result property="deptName" column="dept_name"></result>
+        <collection property="emps" ofType="Employee">
+            <id property="empId" column="emp_id" ></id>
+            <result property="empName" column="emp_name"></result>
+            <result property="age" column="age"></result>
+            <result property="gender" column="gender"></result>
+            <result property="email" column="email"></result>
+        </collection>
+    </resultMap>
+    <select id="getDeptWithCollection" resultMap="getDeptWithCollectionResultMap">
+        SELECT emp.*,dept.* FROM  tb_depts dept LEFT JOIN tb_employees emp ON emp.dept_id=dept.dept_id WHERE dept.dept_id=#{deptId}
+    </select>
+
+
+
+    <!--  分布查询指定员工及其部门属性 ，步骤二 -->
+    <resultMap id="getEmpAndDeptStepTwoResultMap" type="Dept">
+        <id property="deptId" column="dept_id"></id>
+        <result property="deptName" column="dept_name"></result>
+    </resultMap>
+    <select id="getEmpAndDeptStepTwo" resultMap="getEmpAndDeptStepTwoResultMap">
+        SELECT * FROM tb_depts WHERE dept_id = #{deptId}
+    </select>
+
+    <!--    分布查询dept_id部门的所有员工集合 步骤一-->
+    <resultMap id="getDeptAndEmpStepOneResultMap" type="Dept">
+        <id property="deptId" column="dept_id"></id>
+        <result property="deptName" column="dept_name"></result>
+        <collection
+                property="emps"
+                select="com.javasm.mybatis.mapper.EmployeeMapper.getDeptAndEmpStepTwo"
+                column="dept_id"> <!--  只能通过表中的原字段传参  -->
+        </collection>
+    </resultMap>
+    <select id="getDeptAndEmpStepOne" resultMap="getDeptAndEmpStepOneResultMap">
+        SELECT * FROM tb_depts WHERE dept_id=#{deptId}
+    </select>
+
+
+</mapper>

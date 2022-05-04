@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mybatis.mapper.UserMapper">
+
+
+    <!--    int insertUser(User user);-->
+    <insert id="insertUser">
+        INSERT INTO tb_users () VALUES(null,#{username},#{password},#{age},#{gender},#{email})
+    </insert>
+
+    <!--    int updateUser();-->
+    <update id="updateUser">
+        UPDATE tb_users SET username="sheey" WHERE id=7
+    </update>
+
+    <!--    int deleteUserById(Integer id);-->
+    <delete id="deleteUserById">
+        DELETE FROM tb_users WHERE id>#{arg0}
+    </delete>
+    <!--    User queryUser(Integer id,String name);-->
+    <select id="queryUser" resultType="User">
+        SELECT * FROM tb_users WHERE id=${param1} AND username='${param2}';
+    </select>
+    <select id="queryUserByMap" resultType="User">
+        SELECT * FROM tb_users WHERE id=${id} AND username='${name}';
+    </select>
+    <select id="queryUserByParam" resultType="User">
+        SELECT * FROM tb_users WHERE id=${paramId} AND username='${ParamName}';
+    </select>
+    <!--  map类型无法获取值为null的属性  -->
+    <select id="queryUserByIdToMap" resultType="hashmap">
+        SELECT * FROM tb_users WHERE id=${id};
+    </select>
+    <select id="queryAllUserToMapList" resultType="map">
+        SELECT * FROM tb_users ;
+    </select>
+
+    <select id="queryAllUserToMapKey" resultType="map">
+        SELECT * FROM tb_users ;
+    </select>
+
+</mapper>

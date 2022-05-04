@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mybatis.mapper.UserMapper">
+
+    <select id="findUserLike" resultType="User">
+        SELECT * FROM tb_users WHERE username like "%${likename}%";
+    </select>
+    <select id="findUserlike2" resultType="User">
+        SELECT * FROM tb_users WHERE username like "%"#{likename}"%";
+    </select>
+    <delete id="deleteUser">
+        DELETE FROM tb_users WHERE id in (${id});
+    </delete>
+    <insert id="selectByTableName">
+        INSERT INTO ${tableName} () VALUES(NULL,"tablename","abc123",33,'女',null);
+    </insert>
+
+    <!--
+    void insertUser(User user);
+    useGeneratedKeys:设置当前标签中的sql使用了自增的主键
+    keyProperty:将自增的主键的值赋值给传输到映射文件中参数的某个属性(可以是任意一个属性，不会影响原本插入表中的数据)
+    -->
+    <insert id="insertUserFindAutoId" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_users () VALUES(NULL,#{username},#{password},#{age},#{gender},#{email});
+    </insert>
+
+
+</mapper>
